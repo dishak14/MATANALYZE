@@ -76,6 +76,8 @@ for item in os.scandir(source_sparse_matrices_dir):
 
         sparse_matrix = mmread(file_dir_name).A
 
+        # ADDED STUFF FROM HERE FOR TYPE 1,2,3
+
         # FOR COO MATRIX
         coo_form = coo_matrix(sparse_matrix)
         print("\nNumber of rows (COO):", len(coo_form.row))
@@ -117,6 +119,8 @@ for item in os.scandir(source_sparse_matrices_dir):
         else:
             print("Most memory-efficient format: COO")  # COO is less efficient than equal CSR/CSC
             print(f"Memory footprint: {mf_coo} bytes")
+
+        # TILL HERE 
 
         row_length = info[0]
         column_length = info[1]
@@ -279,6 +283,8 @@ for item in os.scandir(source_sparse_matrices_dir):
             print()
             print("CSC FORMAT",CSC_FP,"bytes")
             print()
+
+            # ADDED STUFF FROM HERE FOR TYPE 4
             if COO_FP < CSR_FP and COO_FP < CSC_FP:
                 print("Most memory-efficient format: COO")
             elif CSR_FP < COO_FP and CSR_FP < CSC_FP:
@@ -289,6 +295,8 @@ for item in os.scandir(source_sparse_matrices_dir):
                 print("Best compression could be either CSR or CSC (equal memory footprints)")
             else:
                 print("Most memory-efficient format: COO")  # COO is less efficient than equal CSR/CSC
+
+            # ENDS HERE 
 
 
         print("***********************")
