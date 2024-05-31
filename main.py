@@ -279,6 +279,17 @@ for item in os.scandir(source_sparse_matrices_dir):
             print()
             print("CSC FORMAT",CSC_FP,"bytes")
             print()
+            if COO_FP < CSR_FP and COO_FP < CSC_FP:
+                print("Most memory-efficient format: COO")
+            elif CSR_FP < COO_FP and CSR_FP < CSC_FP:
+                print("Most memory-efficient format: CSR")
+            elif CSC_FP < COO_FP and CSC_FP < CSR_FP:
+                print("Most memory-efficient format: CSC")
+            elif CSR_FP == CSC_FP:  # Handle equal footprints for CSR and CSC
+                print("Best compression could be either CSR or CSC (equal memory footprints)")
+            else:
+                print("Most memory-efficient format: COO")  # COO is less efficient than equal CSR/CSC
+
 
         print("***********************")
         if type == 3:
