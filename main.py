@@ -78,47 +78,48 @@ for item in os.scandir(source_sparse_matrices_dir):
 
         # ADDED STUFF FROM HERE FOR TYPE 1,2,3
 
-        # FOR COO MATRIX
-        coo_form = coo_matrix(sparse_matrix)
-        print("\nNumber of rows (COO):", len(coo_form.row))
-        print("\nNumber of columns (COO):", len(coo_form.col))
-        print("\nNumber of data values (COO):", len(coo_form.data))
-        mf_coo=len(coo_form.col)+len(coo_form.row)+len(coo_form.data)
-        print("\nMemory footprint (COO):", mf_coo)
+        if type != 4:
+            # FOR COO MATRIX
+            coo_form = coo_matrix(sparse_matrix)
+            print("\nNumber of rows (COO):", len(coo_form.row))
+            print("\nNumber of columns (COO):", len(coo_form.col))
+            print("\nNumber of data values (COO):", len(coo_form.data))
+            mf_coo=len(coo_form.col)+len(coo_form.row)+len(coo_form.data)
+            print("\nMemory footprint (COO):", mf_coo)
 
-        # FOR CSR FORMAT
+            # FOR CSR FORMAT
 
-        csr_form = csr_matrix(sparse_matrix)
-        print("\nNumber of indices (CSR):", len(csr_form.indices))
-        print("\nNumber of index pointers (CSR):", len(csr_form.indptr))
-        print("\nNumber of data values (CSR):", len(csr_form.data))
-        mf_csr=len(csr_form.indices)+len(csr_form.indptr)+len(csr_form.data)
-        print("\nMemory footprint (CSR):", mf_csr)
+            csr_form = csr_matrix(sparse_matrix)
+            print("\nNumber of indices (CSR):", len(csr_form.indices))
+            print("\nNumber of index pointers (CSR):", len(csr_form.indptr))
+            print("\nNumber of data values (CSR):", len(csr_form.data))
+            mf_csr=len(csr_form.indices)+len(csr_form.indptr)+len(csr_form.data)
+            print("\nMemory footprint (CSR):", mf_csr)
 
-        # FOR CSC FORMAT
+            # FOR CSC FORMAT
 
-        csc_form = csc_matrix(sparse_matrix)
-        print("\nNumber of indices (CSC):", len(csc_form.indices))
-        print("\nNumber of index pointers (CSC):", len(csc_form.indptr))
-        print("\nNumber of data values (CSC):", len(csc_form.data))
-        mf_csc=len(csc_form.indices)+len(csc_form.indptr)+len(csc_form.data)
-        print("\nMemory footprint (CSC):", mf_csc)
+            csc_form = csc_matrix(sparse_matrix)
+            print("\nNumber of indices (CSC):", len(csc_form.indices))
+            print("\nNumber of index pointers (CSC):", len(csc_form.indptr))
+            print("\nNumber of data values (CSC):", len(csc_form.data))
+            mf_csc=len(csc_form.indices)+len(csc_form.indptr)+len(csc_form.data)
+            print("\nMemory footprint (CSC):", mf_csc)
 
-        if mf_coo < mf_csr and mf_coo < mf_csc:
-            print("Most memory-efficient format: COO")
-            print(f"Memory footprint: {mf_coo} bytes")
-        elif mf_csr < mf_coo and mf_csr < mf_csc:
-            print("Most memory-efficient format: CSR")
-            print(f"Memory footprint: {mf_csr} bytes")
-        elif mf_csc < mf_coo and mf_csc < mf_csr:
-            print("Most memory-efficient format: CSC")
-            print(f"Memory footprint: {mf_csc} bytes")
-        elif mf_csr == mf_csc:  # Handle equal footprints for CSR and CSC
-            print("Best compression could be either CSR or CSC (equal memory footprints)")
-            print(f"Memory footprint (CSR/CSC): {mf_csr} bytes")
-        else:
-            print("Most memory-efficient format: COO")  # COO is less efficient than equal CSR/CSC
-            print(f"Memory footprint: {mf_coo} bytes")
+            if mf_coo < mf_csr and mf_coo < mf_csc:
+                print("Most memory-efficient format: COO")
+                print(f"Memory footprint: {mf_coo} bytes")
+            elif mf_csr < mf_coo and mf_csr < mf_csc:
+                print("Most memory-efficient format: CSR")
+                print(f"Memory footprint: {mf_csr} bytes")
+            elif mf_csc < mf_coo and mf_csc < mf_csr:
+                print("Most memory-efficient format: CSC")
+                print(f"Memory footprint: {mf_csc} bytes")
+            elif mf_csr == mf_csc:  # Handle equal footprints for CSR and CSC
+                print("Best compression could be either CSR or CSC (equal memory footprints)")
+                print(f"Memory footprint (CSR/CSC): {mf_csr} bytes")
+            else:
+                print("Most memory-efficient format: COO")  # COO is less efficient than equal CSR/CSC
+                print(f"Memory footprint: {mf_coo} bytes")
 
         # TILL HERE 
 
