@@ -13,6 +13,8 @@ from helper import (
 )  # Import functions from a helper file
 import os
 import matplotlib.pyplot as plt
+from rle import run_length_encoding
+from bitmap import bitmap_compression
 
 names = []
 multiplications_row = []
@@ -79,47 +81,32 @@ for item in os.scandir(source_sparse_matrices_dir):
         # ADDED STUFF FROM HERE FOR TYPE 1,2,3
 
         if type != 4:
+
             # FOR COO MATRIX
             coo_form = coo_matrix(sparse_matrix)
-            print("\nNumber of rows (COO):", len(coo_form.row))
-            print("\nNumber of columns (COO):", len(coo_form.col))
-            print("\nNumber of data values (COO):", len(coo_form.data))
             mf_coo=len(coo_form.col)+len(coo_form.row)+len(coo_form.data)
             print("\nMemory footprint (COO):", mf_coo)
 
             # FOR CSR FORMAT
 
             csr_form = csr_matrix(sparse_matrix)
-            print("\nNumber of indices (CSR):", len(csr_form.indices))
-            print("\nNumber of index pointers (CSR):", len(csr_form.indptr))
-            print("\nNumber of data values (CSR):", len(csr_form.data))
             mf_csr=len(csr_form.indices)+len(csr_form.indptr)+len(csr_form.data)
             print("\nMemory footprint (CSR):", mf_csr)
 
             # FOR CSC FORMAT
 
             csc_form = csc_matrix(sparse_matrix)
-            print("\nNumber of indices (CSC):", len(csc_form.indices))
-            print("\nNumber of index pointers (CSC):", len(csc_form.indptr))
-            print("\nNumber of data values (CSC):", len(csc_form.data))
             mf_csc=len(csc_form.indices)+len(csc_form.indptr)+len(csc_form.data)
             print("\nMemory footprint (CSC):", mf_csc)
 
-            if mf_coo < mf_csr and mf_coo < mf_csc:
-                print("Most memory-efficient format: COO")
-                print(f"Memory footprint: {mf_coo} bytes")
-            elif mf_csr < mf_coo and mf_csr < mf_csc:
-                print("Most memory-efficient format: CSR")
-                print(f"Memory footprint: {mf_csr} bytes")
-            elif mf_csc < mf_coo and mf_csc < mf_csr:
-                print("Most memory-efficient format: CSC")
-                print(f"Memory footprint: {mf_csc} bytes")
-            elif mf_csr == mf_csc:  # Handle equal footprints for CSR and CSC
-                print("Best compression could be either CSR or CSC (equal memory footprints)")
-                print(f"Memory footprint (CSR/CSC): {mf_csr} bytes")
-            else:
-                print("Most memory-efficient format: COO")  # COO is less efficient than equal CSR/CSC
-                print(f"Memory footprint: {mf_coo} bytes")
+            # FOR RLE FORMAT
+            mf_rle= run_length_encoding(sparse_matrix)
+            print("\nMemory footprint (RLE) ", mf_rle)
+
+            # FOR BITMAP
+            mf_bm= bitmap_compression(sparse_matrix)
+            print("\nMemory footprint (Bitmap) ", mf_bm)
+
 
         # TILL HERE 
 
@@ -276,6 +263,8 @@ for item in os.scandir(source_sparse_matrices_dir):
             COO_FP  = 3*NNZ
             CSR_FP = 2*NNZ + (row_length_sparse+1) 
             CSC_FP = 2*NNZ + (column_length_sparse+1)
+            RLE_FP = 2*(NNZ+4)+2
+            BM_FP = (((row_length_sparse*column_length_sparse)+7) // 8) + NNZ + row_length_sparse + column_length_sparse
             print("MEMORY FOOTPRINT: ")
             print()
             print("COO FORMAT: ",COO_FP,"bytes")
@@ -284,18 +273,9 @@ for item in os.scandir(source_sparse_matrices_dir):
             print()
             print("CSC FORMAT",CSC_FP,"bytes")
             print()
-
-            # ADDED STUFF FROM HERE FOR TYPE 4
-            if COO_FP < CSR_FP and COO_FP < CSC_FP:
-                print("Most memory-efficient format: COO")
-            elif CSR_FP < COO_FP and CSR_FP < CSC_FP:
-                print("Most memory-efficient format: CSR")
-            elif CSC_FP < COO_FP and CSC_FP < CSR_FP:
-                print("Most memory-efficient format: CSC")
-            elif CSR_FP == CSC_FP:  # Handle equal footprints for CSR and CSC
-                print("Best compression could be either CSR or CSC (equal memory footprints)")
-            else:
-                print("Most memory-efficient format: COO")  # COO is less efficient than equal CSR/CSC
+            print("RLE FORMAT", RLE_FP,"bytes")
+            print()
+            print("BITMAP FORMAT", BM_FP,"bytes" )
 
             # ENDS HERE 
 
@@ -337,10 +317,40 @@ plt.title("Addition Comparison")
 plt.legend()
 plt.show()
 
+
+if type in [1,3]:
+    X_axis = np.arange(len(names))
+
+    plt.bar(X_axis - 0.4, mf_coo, 0.175, label="COO")
+    plt.bar(X_axis - 0.2, mf_csr, 0.225, label="CSR")
+    plt.bar(X_axis - 0, mf_csc, 0.225, label="CSC")
+    plt.bar(X_axis + 0.2, mf_rle, 0.225, label="RLE")
+    plt.bar(X_axis + 0.4, mf_bm, 0.175, label="BITMAP")
+
+if type == 2:
+    X_axis = np.arange(len(names))
+
+    plt.bar(X_axis - 0.4, mf_coo, 0.2, label="COO")
+    plt.bar(X_axis - 0.2, mf_csr, 0.2, label="CSR")
+    plt.bar(X_axis - 0, mf_csc, 0.2, label="CSC")
+    plt.bar(X_axis + 0.2, mf_rle, 0.2, label="RLE")
+    plt.bar(X_axis + 0.4, mf_bm, 0.2, label="BITMAP")
+
+    
+    plt.xticks(X_axis, names)
+    plt.xlabel("Matrices")
+    plt.ylabel("Compression ")
+    plt.title("Compression Comparison")
+    plt.legend()
+    plt.show()
+
+
 if(type == 4):
     plt.bar(0.2 ,[COO_FP],0.3, label = "COO")
     plt.bar(0.6 ,[CSR_FP],0.3, label = "CSR")
     plt.bar(1 ,[CSC_FP],0.3, label = "CSC")
+    plt.bar(1.4, [RLE_FP],0.3, label = "RLE")
+    plt.bar(1.8, [BM_FP],0.3, label = "BITMAP")
 
     plt.xticks(X_axis, names)
     plt.xlabel("COMPRESSION FORMATS")
