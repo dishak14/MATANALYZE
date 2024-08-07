@@ -318,32 +318,65 @@ plt.legend()
 plt.show()
 
 
-if type in [1,3]:
-    X_axis = np.arange(len(names))
+# if type in [1,3]:
+#     X_axis = np.arange(len(names))
 
-    plt.bar(X_axis - 0.4, mf_coo, 0.175, label="COO")
-    plt.bar(X_axis - 0.2, mf_csr, 0.225, label="CSR")
-    plt.bar(X_axis - 0, mf_csc, 0.225, label="CSC")
-    plt.bar(X_axis + 0.2, mf_rle, 0.225, label="RLE")
-    plt.bar(X_axis + 0.4, mf_bm, 0.175, label="BITMAP")
+#     plt.bar(X_axis - 0.4, mf_coo, 0.175, label="COO")
+#     plt.bar(X_axis - 0.2, mf_csr, 0.225, label="CSR")
+#     plt.bar(X_axis - 0, mf_csc, 0.225, label="CSC")
+#     plt.bar(X_axis + 0.2, mf_rle, 0.225, label="RLE")
+#     plt.bar(X_axis + 0.4, mf_bm, 0.175, label="BITMAP")
 
 if type == 2:
     X_axis = np.arange(len(names))
 
-    plt.bar(X_axis - 0.4, mf_coo, 0.2, label="COO")
-    plt.bar(X_axis - 0.2, mf_csr, 0.2, label="CSR")
-    plt.bar(X_axis - 0, mf_csc, 0.2, label="CSC")
-    plt.bar(X_axis + 0.2, mf_rle, 0.2, label="RLE")
-    plt.bar(X_axis + 0.4, mf_bm, 0.2, label="BITMAP")
+    plt.bar(X_axis + 0.2, mf_coo, 0.2, label="COO")
+    plt.bar(X_axis + 0.4, mf_csr, 0.2, label="CSR")
+    plt.bar(X_axis + 0.6, mf_csc, 0.2, label="CSC")
+    plt.bar(X_axis + 0.8, mf_rle, 0.2, label="RLE")
+    plt.bar(X_axis + 1.0, mf_bm, 0.2, label="BITMAP")
 
     
-    plt.xticks(X_axis, names)
+    plt.xticks(X_axis + 1.5, names)
     plt.xlabel("Matrices")
     plt.ylabel("Compression ")
     plt.title("Compression Comparison")
     plt.legend()
     plt.show()
 
+if type == 1:
+    X_axis = np.arange(len(names))
+
+    plt.bar(X_axis + 0.2, mf_coo, 0.2, label="COO")
+    plt.bar(X_axis + 0.4, mf_csr, 0.2, label="CSR")
+    plt.bar(X_axis + 0.6, mf_csc, 0.2, label="CSC")
+    plt.bar(X_axis + 0.8, mf_rle, 0.2, label="RLE")
+    plt.bar(X_axis + 1.0, mf_bm, 0.2, label="BITMAP")
+
+    
+    plt.xticks(X_axis + 1.5, names)
+    plt.xlabel("Matrices")
+    plt.ylabel("Compression ")
+    plt.title("Compression Comparison")
+    plt.legend()
+    plt.show()
+
+if type == 3:
+    X_axis = np.arange(len(names))
+
+    plt.bar(X_axis + 0.2, mf_coo, 0.2, label="COO")
+    plt.bar(X_axis + 0.4, mf_csr, 0.2, label="CSR")
+    plt.bar(X_axis + 0.6, mf_csc, 0.2, label="CSC")
+    plt.bar(X_axis + 0.8, mf_rle, 0.2, label="RLE")
+    plt.bar(X_axis + 1.0, mf_bm, 0.2, label="BITMAP")
+
+    
+    plt.xticks(X_axis + 0.5, names)
+    plt.xlabel("Matrices")
+    plt.ylabel("Compression ")
+    plt.title("Compression Comparison")
+    plt.legend()
+    plt.show()
 
 if(type == 4):
     plt.bar(0.2 ,[COO_FP],0.3, label = "COO")
