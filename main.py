@@ -15,14 +15,22 @@ import os
 import matplotlib.pyplot as plt
 from rle import run_length_encoding
 from bitmap import bitmap_compression
+from algos import inner_product, outer_product
 
 names = []
 multiplications_row = []
 additions_row = []
 multiplications_col = []
 additions_col = []
+multiplications_inner = []
+additions_inner = []
+multiplications_outer = []
+additions_outer = []
+load_counts_row = []
+load_counts_col = []
 compression_formats = []
 
+type2 = 0
 type = int(input("Enter the type: "))
 
 # Specify directories for source and destination matrices
@@ -34,6 +42,21 @@ elif type == 3:
     source_sparse_matrices_dir = "./manual/"
 elif type == 4:
     source_sparse_matrices_dir = "./individual/"
+
+elif type == 5:
+    type2 = int(input("Enter the type2: "))
+
+    if type2 == 1:
+        source_sparse_matrices_dir = "./sparse_matrices/"
+    elif type2 == 2:
+        source_sparse_matrices_dir = "./individual/"
+
+    elif type2 == 3:
+         source_sparse_matrices_dir = "./manual/"
+    elif type2 == 4:
+        source_sparse_matrices_dir = "./individual/"
+
+    on_chip_size =int(input("Enter the size of the onchip memory (number of elements): "))
 
 
 destination_dense_matrices_dir = "./dense_matrices/"
@@ -80,7 +103,7 @@ for item in os.scandir(source_sparse_matrices_dir):
 
         # ADDED STUFF FROM HERE FOR TYPE 1,2,3
 
-        if type != 4:
+        if type ==1 or type == 2 or type == 3:
 
             # FOR COO MATRIX
             coo_form = coo_matrix(sparse_matrix)
@@ -141,7 +164,7 @@ for item in os.scandir(source_sparse_matrices_dir):
         #         [1.0, 2.0, 3.0, 4.0, 5.0],
         #     ]
         # )
-        if type == 4:
+        if type == 4 or type2 ==4:
             row_length_sparse = int(input("ENTER THE SPARSE ROW LENGTH: "))
             print()
             column_length_sparse = int(input("ENTER THE SPARSE COLUMN LENGTH: "))
@@ -167,11 +190,17 @@ for item in os.scandir(source_sparse_matrices_dir):
             dense_matrix = generate_dense_matrix_with_sparsity(
                 row_length_dense, column_length_dense, sparsity_dense
             )
+        NNZ = np.count_nonzero(sparse_matrix)
+        spar = (info0 * info1 - NNZ) * 100 / (info0 * info1)
+
+        #initialize counters for tracking operations
+        additionCounterRow = 0
+        multiplicationCounterRow = 0
 
         # Optionally save the generated dense matrix
-        if saveGeneratedDenseMatrices:
-            file_path = f"{destination_dense_matrices_dir}{file_name}"
-            save_as_mtx(dense_matrix, file_path)
+        #if saveGeneratedDenseMatrices:
+            #file_path = f"{destination_dense_matrices_dir}{file_name}"
+            #save_as_mtx(dense_matrix, file_path)
 
         # Initialize counters for tracking operations
         additionCounterRow = 0
@@ -182,9 +211,82 @@ for item in os.scandir(source_sparse_matrices_dir):
         final_row_matrix = np.zeros((row_length, column_length))
         final_col_matrix = np.zeros((row_length, column_length))
 
-        if type == 4:
+        if type == 4 or type2==4:
             final_row_matrix = np.zeros((row_length_sparse, column_length_dense))
             final_col_matrix = np.zeros((row_length_sparse, column_length_dense))
+
+        
+        if type == 5:
+            
+           
+
+            load_count_row = 0 
+            load_count_col = 0
+            coo_form = coo_matrix(sparse_matrix)
+
+            for i in range(len(coo_form.row)):
+                #value = coo_form.data[i]
+                load_count_row += 1
+
+                # final_row_matrix[row] += value * dense_matrix[col]
+
+                load_count_row+=len(final_row_matrix[0])
+
+                load_count_row += len(dense_matrix[0])
+
+            load_counts_row.append(load_count_row)
+
+
+            for i in range(len(dense_matrix[0])):
+                for j in range(len(dense_matrix)):
+                    
+                    #value = dense_matrix[row][col]
+                    load_count_col += 1
+                    
+                   # final_col_matrix[:, col] += value *  sparse_matrix[:, row]
+                    load_count_col += len(final_col_matrix)
+                    load_count_col += len(sparse_matrix)
+
+                    
+            load_counts_col.append(load_count_col)
+
+            if spar > 66.66666666666667: 
+
+                max_array = len(coo_form.row)
+
+                
+                times_load = 0
+                temp_on_chip_size = on_chip_size//3
+
+
+            
+                while max_array-temp_on_chip_size > 0 :
+                        times_load += 1
+                        max_array = max_array - temp_on_chip_size
+
+                print()
+                print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                print("The number of times the matrix in COO format must be loaded on chip : ",times_load,"(COO FORMAT)")
+                print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                print()
+          
+            else:
+                
+                times_load_dense = 0
+                temp_on_chip_size_dense = on_chip_size//info1
+
+                info0_temp = info0
+
+                while info0_temp > 0:
+
+                    times_load_dense += 1
+                    info0_temp = info0_temp - temp_on_chip_size_dense
+
+                print()
+                print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                print("The number of times the matrix must be loaded on chip: ",times_load_dense,"(DENSE FORMAT)")
+                print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                print()
 
 
 
@@ -209,16 +311,16 @@ for item in os.scandir(source_sparse_matrices_dir):
         print("***********************")
         print(f"Name: {file_name.split('.')[0]} Dimensions: {info0} X {info1}")
         print()
-        NNZ = np.count_nonzero(sparse_matrix)
+        #NNZ = np.count_nonzero(sparse_matrix)
         print("NNZ =", NNZ)
         print()
-        spar = (info0 * info1 - NNZ) * 100 / (info0 * info1)
+        #spar = (info0 * info1 - NNZ) * 100 / (info0 * info1)
         print("Sparsity = ", spar, "%")
         print()
         # print(final_row_matrix)
         multiplications_row.append(multiplicationCounterRow)
         additions_row.append(additionCounterRow)
-        print("Row Wise Algo:")
+        print("----------Row Wise Algorithm----------")
         print(
             "Multiplications: ",
             multiplicationCounterRow,
@@ -226,6 +328,11 @@ for item in os.scandir(source_sparse_matrices_dir):
             additionCounterRow,
         )
         print()
+        print()
+
+        if(type==5):
+            print()
+            print("load/stores count Row :",load_count_row)
 
         # Col Wise Algo
         additionCounterCol = 0
@@ -246,7 +353,7 @@ for item in os.scandir(source_sparse_matrices_dir):
                 if col == previous_col:
                     additionCounterCol += len(sparse_matrix)
                 previous_col = col
-        print("Col Wise Algo:")
+        print("----------Column Wise Algorithm----------")
         multiplications_col.append(multiplicationCounterRow)
         additions_col.append(additionCounterCol)
 
@@ -259,7 +366,20 @@ for item in os.scandir(source_sparse_matrices_dir):
 
         print()
 
-        if(type == 4):
+        if(type==5):
+            print()
+            print("load/stores count Column :",load_count_col)
+
+        result = inner_product(dense_matrix, sparse_matrix, True)
+        multiplications_inner.append(result["num_of_multiplications"])
+        additions_inner.append(result["num_of_additions"])
+
+        result = outer_product(dense_matrix, sparse_matrix, True)
+        multiplications_outer.append(result["num_of_multiplications"])
+        additions_outer.append(result["num_of_additions"])
+        print()
+
+        if type == 4 or type2 == 4:
             COO_FP  = 3*NNZ
             CSR_FP = 2*NNZ + (row_length_sparse+1) 
             CSC_FP = 2*NNZ + (column_length_sparse+1)
@@ -280,8 +400,8 @@ for item in os.scandir(source_sparse_matrices_dir):
             # ENDS HERE 
 
 
-        print("***********************")
-        if type == 3:
+        print("************************************")
+        if (type == 3 or type == 5) and (type2==3 and type2==0):
             print("THE VALUE IS", len(sparse_matrix))
             print(sparse_matrix)
             print("\tX")
@@ -295,10 +415,23 @@ for index, name in enumerate(names):
 
 X_axis = np.arange(len(names))
 
-plt.bar(X_axis - 0.2, multiplications_row, 0.4, label="Row Algo")
-plt.bar(X_axis + 0.2, multiplications_col, 0.4, label="Col Algo")
+plt.bar(X_axis + 0.2, multiplications_row, 0.4, label="Row Algo")
+plt.bar(X_axis + 0.4, multiplications_col, 0.4, label="Col Algo")
+plt.bar(X_axis + 0.6, multiplications_inner, 0.2, label="Inner Algo")
+plt.bar(X_axis + 0.8, multiplications_outer, 0.2, label="Outer Algo")
 
-plt.xticks(X_axis, names)
+
+plt.xticks(X_axis +0.5, names)
+plt.xlabel("Matrices")
+plt.ylabel("Multiplications")
+plt.title("Multiplication Comparison")
+plt.legend()
+plt.show()
+
+plt.bar(X_axis + 0.2, multiplications_row, 0.2, label="Row Algo")
+plt.bar(X_axis + 0.4, multiplications_col, 0.2, label="Col Algo")
+
+plt.xticks(X_axis + 0.3, names)
 plt.xlabel("Matrices")
 plt.ylabel("Multiplications")
 plt.title("Multiplication Comparison")
@@ -307,10 +440,22 @@ plt.show()
 
 X_axis = np.arange(len(names))
 
-plt.bar(X_axis - 0.2, additions_row, 0.4, label="Row Algo")
-plt.bar(X_axis + 0.2, additions_col, 0.4, label="Col Algo")
+plt.bar(X_axis + 0.2, additions_row, 0.2, label="Row Algo")
+plt.bar(X_axis + 0.4, additions_col, 0.2, label="Col Algo")
+plt.bar(X_axis + 0.6, additions_inner, 0.2, label="Inner Algo")
+plt.bar(X_axis + 0.8, additions_outer, 0.2, label="Outer Algo")
 
-plt.xticks(X_axis, names)
+plt.xticks(X_axis + 0.5, names)
+plt.xlabel("Matrices")
+plt.ylabel("Additions")
+plt.title("Addition Comparison")
+plt.legend()
+plt.show()
+
+plt.bar(X_axis + 0.2, additions_row, 0.2, label="Row Algo")
+plt.bar(X_axis + 0.4, additions_col, 0.2, label="Col Algo")
+
+plt.xticks(X_axis + 0.3, names)
 plt.xlabel("Matrices")
 plt.ylabel("Additions")
 plt.title("Addition Comparison")
@@ -378,7 +523,7 @@ if type == 3:
     plt.legend()
     plt.show()
 
-if(type == 4):
+if type == 4 or type2 == 4:
     plt.bar(0.2 ,[COO_FP],0.3, label = "COO")
     plt.bar(0.6 ,[CSR_FP],0.3, label = "CSR")
     plt.bar(1 ,[CSC_FP],0.3, label = "CSC")
